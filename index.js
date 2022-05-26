@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -20,14 +20,39 @@ async function run() {
         await client.connect();
         // console.log('database connected')
         const serviceCollection = client.db('assignment').collection('services');
+    
 
-        app.get('/service', async(req, res) =>{
+        app.get('/service', async (req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
             const services = await cursor.toArray();
             res.send(services);
 
+        });
+
+        //purchase
+        app.get('/purchase/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const result = await serviceCollection.findOne(query);
+            console.log('ok');
+            res.send(result);
+            // console.log(req);
+          })
+
+        app.post('/booking', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
         })
+        /***
+         * api naming convention
+         * app.get('/booking.) // get all booking
+         * app.get('/booking/:id') // get a specific booking
+         * app.post('/booking') // add a new booking
+         * app.patch('/booking/:id')//specific
+         * app.delete('/booking/:id')//specific
+         */
 
     }
     finally {

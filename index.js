@@ -21,7 +21,10 @@ async function run() {
     // console.log('database connected')
     const serviceCollection = client.db('assignment').collection('services');
     const userCollection = client.db('assignment').collection("users");
+    const postCollection = client.db('assignment').collection("user");
     const orderCollection = client.db('assignment').collection("order");
+    const reviewCollection = client.db('assignment').collection("review");
+
 
 
     app.get('/service', async (req, res) => {
@@ -31,6 +34,8 @@ async function run() {
       res.send(services);
 
     });
+
+
 
     //update
     app.post('/products', async (req, res) => {
@@ -63,6 +68,35 @@ async function run() {
 
     });
 
+    // profile
+    app.post('/users', async (req, res) => {
+      const newUser = req.body;
+      const user = await postCollection.insertOne(newUser);
+      res.send(user);
+    })
+
+    // review
+    app.post('/reviews', async (req, res) => {
+      const newProduct = req.body;
+      const review = await reviewCollection.insertOne(newProduct);
+      res.send(review);
+  })
+
+  // get reviews
+  app.get('/reviews', async (req, res) => {
+    const query = {};
+    const authorization = req.headers.authorization;
+    console.log('auth header', authorization);
+    const cursor = reviewCollection.find(query);
+    const review = await cursor.toArray();
+    res.send(review)
+})
+
+
+
+
+
+
     // my orders
     app.get('/order/:email', async (req, res) => {
       const email = req.params.email;
@@ -70,41 +104,15 @@ async function run() {
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray()
       res.send(result)
+    });
+
+    //delete
+    app.delete('/service/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await serviceCollection.deleteOne(query);
+      res.send(result);
     })
-
-    /* 
-    
-      // get a specific service tool by id
-app.get('/products/:id', async(req, res) =>{
-  const id = req.params.id;
-  const query = {_id:ObjectId(id)};
-  const result = await toolsCollection.findOne(query);
-  res.send(result);
-})
-// my orders
-app.get('/order/:email', async (req, res)=>{
-  const email = req.params.email;
-  const query ={email:email}
-  const cursor = orderCollection.find(query);
-  const result = await cursor.toArray()
-  res.send(result)
-})
- 
-    */
-
-
-
-
-
-
-    /***
-     * api naming convention
-     * app.get('/booking.) // get all booking
-     * app.get('/booking/:id') // get a specific booking
-     * app.post('/booking') // add a new booking
-     * app.patch('/booking/:id')//specific
-     * app.delete('/booking/:id')//specific
-     */
 
   }
   finally {
